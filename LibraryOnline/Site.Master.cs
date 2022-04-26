@@ -7,6 +7,9 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Microsoft.AspNet.Identity;
+using System.Linq;
+using LibraryOnline.Models;
+using LibraryOnline.Logic;
 
 namespace LibraryOnline
 {
@@ -69,7 +72,26 @@ namespace LibraryOnline
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (HttpContext.Current.User.IsInRole("canEdit"))
+            {
+                adminLink.Visible = true;
+            }
+        }
 
+        protected void Page_PreRender(object sender, EventArgs e)
+        {
+            using (BorrowedStackActions usersBorrowedStack = new BorrowedStackActions())
+            {
+                string stackStr = string.Format("Выбранные книги ({0})", usersBorrowedStack.GetCount());
+                stackCount.InnerText = stackStr;
+            }
+        }
+
+        public IQueryable<BookCategory> GetCategories()
+        {
+            var _db = new LibraryOnline.Models.BookContext();
+            IQueryable<BookCategory> query = _db.Categories;
+            return query;
         }
 
         protected void Unnamed_LoggingOut(object sender, LoginCancelEventArgs e)
